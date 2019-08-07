@@ -5,10 +5,10 @@
  *for any help contact me on facebook https://fb.com/escode4
  */
 
-
 /*
  * example to use this class
  *
+ * require_once __DIR__.'mysqlbackup.php'; // mysqlbackup.php file path
  *
  * $backup = new MySqlBackup();
  * $backup->mysql_host = "localhost"; // database host
@@ -67,11 +67,7 @@ class MySqlBackup
 
         if ($this->BackupDBinLocal()) {
             if ($this->backupFtp === true) {
-                if ($this->BackupDbinFtp()) {
-                    if ($this->backupLocal !== true) {
-                        $this->DeleteOldBackups([], "", true);
-                    }
-                }
+                $this->BackupDbinFtp();
             }
         }
         return $this->SendReport();
@@ -82,7 +78,7 @@ class MySqlBackup
     {
         $old_backups = scandir($this->backups_folder);
         $sortBackups = $this->ReturnOldBackup($old_backups, "local");
-        exec("mysqldump -h $this->mysql_host -u $this->mysql_user -p$this->mysql_pass $this->mysql_db  | gzip >$this->backups_folder/$this->new_backup_file_name 2> /dev/null", $output, $result);
+        exec("mysqldump -h $this->mysql_host -u $this->mysql_user -p$this->mysql_pass $this->mysql_db 2> /dev/null | gzip >$this->backups_folder/$this->new_backup_file_name ", $output, $result);
         if ($result == 0) {
             $this->DeleteOldBackups($sortBackups, "local");
             if ($this->backupLocal === true) {
@@ -106,8 +102,11 @@ class MySqlBackup
             $fp = fopen($this->backups_folder . '/' . $this->new_backup_file_name, 'r');
             $old_backups = ftp_nlist($this->ftp_conn, $this->ftp_backup_folder);
             $sortBackups = $this->ReturnOldBackup($old_backups, "ftp");
-            if (ftp_fput($this->ftp_conn, $this->ftp_backup_folder . '/' . $this->new_backup_file_name, $fp, FTP_ASCII)) {
+            if (ftp_fput($this->ftp_conn, $this->ftp_backup_folder . '/' . $this->new_backup_file_name, $fp, FTP_BINARY)) {
                 $this->DeleteOldBackups($sortBackups, "ftp");
+                if ($this->backupLocal !== true) {
+                    $this->DeleteOldBackups([], "", true);
+                }
                 $this->messages .= "[+]The backup was sent to ftp server successfully \n";
                 return true;
             } else {
