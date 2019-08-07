@@ -33,5 +33,5 @@ for any help contact me on facebook https://fb.com/escode4
   you can schedule backup with crontab or windows schedule 
   * schedule backup with crontab :
   * run `crontab -e` in terminal
-  * in end file type `0 0 * * * php path-to-mysqlbackup-file/mysqlbackup,php`
+  * in end file type `0 0 * * * php path-to-mysqlbackup-file/mysqlbackup.php`
   * `0 0 * * * ` mean run file every day at At 12:00 am you can change it as you like 
